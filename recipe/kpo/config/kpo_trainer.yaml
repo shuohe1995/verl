@@ -9,8 +9,8 @@ defaults:
 data:
   gen_batch_size: ${data.train_batch_size}
 
-actor_rollout_ref:
-  actor:
+algorithm:
+  kpo:
     is_clip: true
     kalman_Q: 1e-6
     kalman_R: 1.0

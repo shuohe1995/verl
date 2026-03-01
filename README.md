@@ -52,6 +52,14 @@ recipe/kpo/
    bash examples/kpo_trainer/kpo_qwen3_4b.sh eval
    ```
 
+3. **Environment variables** (lines 41–44 in `kpo_qwen3_4b.sh`): You can set the following in your environment before running the script; the script passes them through as-is:
+   | Variable | Description | Example |
+   |----------|-------------|---------|
+   | `WANDB_API_KEY` | Weights & Biases API key for logging training/eval runs | `export WANDB_API_KEY=your_key` |
+   | `WANDB_DIR` | Directory for W&B local cache and checkpoints | `export WANDB_DIR=/path/to/checkpoints` |
+   | `CUDA_VISIBLE_DEVICES` | Comma-separated list of visible GPUs | `export CUDA_VISIBLE_DEVICES=0,1` |
+   | `HF_HOME` | Hugging Face cache directory (models, tokenizers, etc.) | `export HF_HOME=/path/to/hf_cache` |
+
 **Weights & Biases** — Training and evaluation runs are logged to W&B. Click the badges to open the dashboards:
 
 - [![W&B](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge.svg)](https://api.wandb.ai/links/hs827083890-nanyang-technological-university-singapore/wcvvdkyz) **Training**
