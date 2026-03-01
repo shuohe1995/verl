@@ -3,8 +3,8 @@ set -xeuo pipefail
 MODE=${1:-train}
 if [ "$MODE" == "eval" ] || [ "$MODE" == "evaluation" ]; then
     echo "Running in evaluation mode"
-    train_path=$HOME/verl/data/math/train.parquet
-    test_path=$HOME/verl/data/math/test.parquet
+    train_path=/mnt/raid/data/shuo.he/math/train.parquet
+    test_path=/mnt/raid/data/shuo.he/math/test.parquet
     train_batch_size=32
     val_batch_size=64
     val_before_train=True
@@ -12,14 +12,15 @@ if [ "$MODE" == "eval" ] || [ "$MODE" == "evaluation" ]; then
     val_n_resp_per_prompt=16
 else
     echo "Running in training mode"
-    train_path=$HOME/verl/data/math/train.parquet
-    test_path=$HOME/verl/data/math/test_sampled.parquet
+    train_path=/mnt/raid/data/shuo.he/math/train.parquet
+    test_path=/mnt/raid/data/shuo.he/math/test_sampled.parquet
     train_batch_size=32
     val_batch_size=110
     val_before_train=false
     n_resp_per_prompt=8
     val_n_resp_per_prompt=1
 fi
+
 
 # can make training faster, depends on your infrastructure
 export NCCL_IBEXT_DISABLE=1
@@ -37,19 +38,19 @@ export NNODES
 export VLLM_ATTENTION_BACKEND=FLASH_ATTN
 export RAY_LOGGING_LEVEL=DEBUG
 export HYDRA_FULL_ERROR=1
-export WANDB_API_KEY="${WANDB_API_KEY}"       # set in env, e.g. export WANDB_API_KEY=your_key
-export WANDB_DIR="${WANDB_DIR}"               # set in env, e.g. export WANDB_DIR=/path/to/checkpoints
-export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES}"  # set in env, e.g. export CUDA_VISIBLE_DEVICES=0,1
-export HF_HOME="${HF_HOME}"                   # set in env, e.g. export HF_HOME=/path/to/hf_cache
+export WANDB_API_KEY="1040e260ff36dabb6acaaa83f7a7e4c661412cae" # your wandb API key
+export WANDB_DIR="/mnt/raid/data/shuohe/checkpoints" # change to your own WANDB_DIR
+export CUDA_VISIBLE_DEVICES=4,5 # change to your own CUDA_VISIBLE_DEVICES
+export HF_HOME='/mnt/raid/data/shuohe' 
 
 
 echo "Using $NNODES nodes for training..."
 
 # ------------------------------------- Setup xp params ---------------------------------------
-project_name='RL-KPO'
+project_name='RL-KPO-test'
 adv_estimator=grpo
 loss_mode=kpo 
-is_clip=true  # true: PPO-style clip; false: unclipped KPO
+is_clip=false  # true: PPO-style clip; false: unclipped KPO
 kalman_q=1e-6   # KPO Kalman process noise (Q)
 kalman_r=1      # KPO Kalman observation noise (R)
 loss_agg_mode="seq-mean-token-mean"
@@ -60,7 +61,7 @@ return_raw_chat="True"
 if [ "$rollout_engine" = "vllm" ]; then
     export VLLM_USE_V1=1
 fi
-gpu_memory_utilization=0.6
+gpu_memory_utilization=0.5
 reward_manager=dapo
 adv_estimator=grpo
 shuffle_dataset=true
@@ -89,7 +90,7 @@ overlong_penalty_factor=1.0
 
 # Paths and namings
 SFT_MODEL=$(basename $MODEL_PATH)
-exp_name="${loss_mode}-epslow-${clip_ratio_low}-epshigh-${clip_ratio_high}-${SFT_MODEL}-now-noadaclip-causal-q1e-6-r1"
+exp_name="${loss_mode}-clip-${is_clip}-epslow-${clip_ratio_low}-epshigh-${clip_ratio_high}-q1e-6-r1-${SFT_MODEL}"
 CKPTS_DIR=/mnt/raid/data/shuohe/checkpoints/${loss_mode}/${exp_name}
 #ollout_data_dir=/mnt/raid/data/shuohe/rollout_data/${exp_name}
 
@@ -108,21 +109,20 @@ offload=true
 gen_tp=1
 entropy_checkpointing=true # This enables entropy recomputation specifically for the entropy calculation, lowering memory usage during training.
 
-# ------------------------------------- train/val data preparation ---------------------------------------
 
-python examples/data_preprocess/drmas_math.py --local_dir /mnt/raid/data/shuo.he/math
+python recipe/kpo/data_preprocess/drmas_math.py --local_dir /mnt/raid/data/shuo.he/math
 
 
 # set the paths
 train_files="['$train_path']"
 test_files="['$test_path']"
 
-python3 -m verl.trainer.main_ppo \
+python3 -m recipe.kpo.main_kpo \
     algorithm.adv_estimator=${adv_estimator} \
+    algorithm.kpo.is_clip=${is_clip} \
+    algorithm.kpo.kalman_Q=${kalman_q} \
+    algorithm.kpo.kalman_R=${kalman_r} \
     actor_rollout_ref.actor.policy_loss.loss_mode=${loss_mode} \
-    +actor_rollout_ref.actor.is_clip=${is_clip} \
-    +actor_rollout_ref.actor.kalman_Q=${kalman_q} \
-    +actor_rollout_ref.actor.kalman_R=${kalman_r} \
     data.train_files="${train_files}" \
     data.val_files="${test_files}" \
     data.shuffle=$shuffle_dataset \
