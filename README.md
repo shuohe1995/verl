@@ -1,6 +1,17 @@
-# KPO (Online Causal Kalman Filtering for Stable and Effective Policy Optimization)
+<div align="center">
 
-This repo includes the **KPO** implementation: Kalman filtering is used to smooth token-level importance ratios within verl's PPO framework, with optional PPO-style clipping. Training uses the standard verl PPO entry point (`verl.trainer.main_ppo`) with `loss_mode=kpo`.
+# KPO: Online Causal Kalman Filtering for Stable and Effective Policy Optimization
+
+[![arXiv](https://img.shields.io/badge/arXiv-2602.10609-b31b1b.svg)](https://arxiv.org/abs/2602.10609)
+[![HF Daily Paper](https://img.shields.io/badge/HF-Daily%20Paper-FFD21E.svg)](https://huggingface.co/papers/2602.10609)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![GitHub stars](https://img.shields.io/github/stars/shuohe1995/verl-kpo.svg)](https://github.com/shuohe1995/verl-kpo)
+
+</div>
+
+**`KPO`** is designed for stable and effective policy optimization of large language models via reinforcement learning (RL). It uses online causal Kalman filtering to smooth token-level importance ratios in the PPO/GRPO pipeline, reducing variance and improving training stability.
+
+This implementation features plug-in integration with [verl](https://github.com/volcengine/verl) (loss mode `kpo`), optional PPO-style clipping, configurable Kalman noise (Q/R), and flexible loss aggregation, making it well suited for math reasoning and other RLHF/RL from human feedback workloads.
 
 ## Directory structure
 
@@ -42,19 +53,9 @@ verl/
 
 ## Quick start
 
+1. **Conda env install**: refer to https://verl.readthedocs.io/en/latest/start/install.html
 
-1. **Training** (from repo root):
-   ```bash
-   cd /path/to/verl-kpo
-   bash examples/kpo_trainer/kpo_qwen3_4b.sh
-   ```
-
-2. **Evaluation**: Pass `eval` or `evaluation` to use evaluation data and batch settings:
-   ```bash
-   bash examples/kpo_trainer/kpo_qwen3_4b.sh eval
-   ```
-
-3. **Environment variables** (near the top of `kpo_qwen3_4b.sh`): Set the following in your environment before running; the script passes them through as-is:
+2. **Environment variables** (near the top of `kpo_qwen3_4b.sh`): Set the following in your environment before running; the script passes them through as-is:
    | Variable | Description | Example |
    |----------|-------------|---------|
    | `WANDB_API_KEY` | Weights & Biases API key for logging training/eval runs | `export WANDB_API_KEY=your_key` |
@@ -62,11 +63,28 @@ verl/
    | `CUDA_VISIBLE_DEVICES` | Comma-separated list of visible GPUs | `export CUDA_VISIBLE_DEVICES=0,1` |
    | `HF_HOME` | Hugging Face cache directory (models, tokenizers, etc.) | `export HF_HOME=/path/to/hf_cache` |
 
-**Weights & Biases** — Training and evaluation runs are logged to W&B. Click the badges to open the dashboards:
+3. **Training** (from repo root):
+   ```bash
+   cd /path/to/verl-kpo
+   bash examples/kpo_trainer/kpo_qwen3_4b.sh
+   ```
 
-- [![W&B](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge.svg)](https://api.wandb.ai/links/hs827083890-nanyang-technological-university-singapore/wcvvdkyz) **Training**
-- [![W&B](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge.svg)](https://api.wandb.ai/links/hs827083890-nanyang-technological-university-singapore/3oo5r65x) **Evaluation**
+4. **Evaluation**: Pass `eval` or `evaluation` to use evaluation data and batch settings:
+   ```bash
+   bash examples/kpo_trainer/kpo_qwen3_4b.sh eval
+   ```
 
+Training and evaluation runs are logged to **Weights & Biases** (see badges above for dashboards).
+
+## Acknowledgement
+
+This codebase is built upon [veRL](https://github.com/volcengine/verl). The KPO policy loss and Kalman filtering are integrated into verl's PPO/GRPO trainer and core algorithms.
+
+The math reward is adapted from [Dr. MAS](https://github.com/langfengQ/DrMAS) and DAPO-style math evaluation.
+
+We extend our gratitude to the authors and contributors of these projects for their valuable work.
+
+## Citation
 
 ```bibtex
 @misc{he2026onlinecausalkalmanfiltering,
