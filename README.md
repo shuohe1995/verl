@@ -1,17 +1,22 @@
 # KPO (Online Causal Kalman Filtering for Stable and Effective Policy Optimization)
 
-This directory contains the **KPO** implementation: Kalman filtering is used to smooth token-level importance ratios within verl's PPO framework, with optional PPO-style clipping.
+This repo includes the **KPO** implementation: Kalman filtering is used to smooth token-level importance ratios within verl's PPO framework, with optional PPO-style clipping. Training uses the standard verl PPO entry point (`verl.trainer.main_ppo`) with `loss_mode=kpo`.
 
 ## Directory structure
 
 ```
-recipe/kpo/
-├── README.md              # This file
-├── main_kpo.py            # Entry point (Hydra + Ray PPO trainer)
-├── core_algos.py          # KPO core (Kalman filter and policy loss)
-├── config/
-│   └── kpo_trainer.yaml   # KPO defaults (inherits ppo_trainer)
-└── kpo_qwen3_4b.sh       # Example train/eval script for Qwen3-4B
+examples/
+├── kpo_trainer/
+│   └── kpo_qwen3_4b.sh   # Train/eval script for Qwen3-4B (calls verl.trainer.main_ppo)
+└── data_preprocess/
+    └── kpo_math.py       # Data preprocessing for math KPO
+
+verl/
+├── trainer/ppo/
+│   └── core_algos.py     # KPO core (Kalman filter + policy loss, registered as loss_mode "kpo")
+└── utils/reward_score/
+    ├── __init__.py       # default_compute_score for data_source "math_kpo"
+    └── kpo_math_reward.py
 ```
 
 ## Algorithm overview
@@ -38,21 +43,18 @@ recipe/kpo/
 ## Quick start
 
 
-1. **Training** (example):
+1. **Training** (from repo root):
    ```bash
-   cd /path/to/verl
-   bash recipe/kpo/kpo_qwen3_4b.sh
-   or
+   cd /path/to/verl-kpo
    bash examples/kpo_trainer/kpo_qwen3_4b.sh
    ```
 
 2. **Evaluation**: Pass `eval` or `evaluation` to use evaluation data and batch settings:
    ```bash
-   bash recipe/kpo/kpo_qwen3_4b.sh eval
    bash examples/kpo_trainer/kpo_qwen3_4b.sh eval
    ```
 
-3. **Environment variables** (lines 41–44 in `kpo_qwen3_4b.sh`): You can set the following in your environment before running the script; the script passes them through as-is:
+3. **Environment variables** (near the top of `kpo_qwen3_4b.sh`): Set the following in your environment before running; the script passes them through as-is:
    | Variable | Description | Example |
    |----------|-------------|---------|
    | `WANDB_API_KEY` | Weights & Biases API key for logging training/eval runs | `export WANDB_API_KEY=your_key` |
