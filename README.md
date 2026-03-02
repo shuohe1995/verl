@@ -74,7 +74,11 @@ verl/
    bash examples/kpo_trainer/kpo_qwen3_4b.sh eval
    ```
 
-Training and evaluation runs are logged to **Weights & Biases** (see badges above for dashboards).
+
+**Weights & Biases** — Training and evaluation runs are logged to W&B. Click the badges to open the dashboards:
+
+- [![W&B](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge.svg)](https://api.wandb.ai/links/hs827083890-nanyang-technological-university-singapore/wcvvdkyz) **Training**
+- [![W&B](https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge.svg)](https://api.wandb.ai/links/hs827083890-nanyang-technological-university-singapore/3oo5r65x) **Evaluation**
 
 ## Acknowledgement
 
