@@ -1,0 +1,21 @@
+hydra:
+  searchpath:
+    - file://verl/trainer/config
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+reward:
+  custom_reward_function:
+    path: pkg://recipe.kpo.utils.reward_score
+    name: default_compute_score
+
+algorithm:
+  kpo:
+    is_clip: true
+    kalman_Q: 1e-6
+    kalman_R: 1.0
+
+trainer:
+  project_name: verl-kpo
